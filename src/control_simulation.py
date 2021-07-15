@@ -4,7 +4,6 @@ import os, sys
 import numpy as np
 import MDAnalysis as mda
 from traj_reader import *
-from simplices_construction import *
 import multiprocessing
 from joblib import Parallel, delayed
 

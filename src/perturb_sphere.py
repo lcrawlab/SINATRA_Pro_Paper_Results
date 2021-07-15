@@ -4,10 +4,14 @@ import os
 from traj_reader import *
 from control_simulation import *
 import multiprocessing
+from mesh import *
 
 n_core = multiprocessing.cpu_count()
 print("Detected %d cores"%n_core)
 
+n_core = 4
+
+n_sample = 100
 prot = "WT"
 protA = "original"
 protB = "perturbed"
@@ -30,17 +34,14 @@ if not os.path.exists(directory):
     os.mkdir(directory)
 if not os.path.exists(directory + '/pdb'):
     os.mkdir(directory + '/pdb')
-if not os.path.exists(directory + '/msh'):
-    os.mkdir(directory + '/msh')
 
 for offset in range(0,50,10):
     ## Original set of frames
-    convert_traj_pdb_aligned(protA = prot, protB = prot, struct_file_A = struct_file, traj_file_A = traj_file, struct_file_B = struct_file, traj_file_B = traj_file, align_frame = offset, n_sample = n_sample, offset = offset, selection = selection, directory = directory)
+    convert_traj_pdb_aligned(protA = prot, protB = prot, struct_file_A = struct_file, traj_file_A = traj_file, struct_file_B = struct_file, traj_file_B = traj_file, align_frame = offset, n_sample = n_sample, offset = offset, selection = selection, directory = directory, verbose = True)
     ## Pick different set of frames from trajectory
-    convert_traj_pdb_aligned(protA = prot, protB = prot, struct_file_A = struct_file, traj_file_A = traj_file, struct_file_B = struct_file, traj_file_B = traj_file, align_frame = offset, n_sample = n_sample, offset = offset+50, selection = selection, directory = directory)   
+    convert_traj_pdb_aligned(protA = prot, protB = prot, struct_file_A = struct_file, traj_file_A = traj_file, struct_file_B = struct_file, traj_file_B = traj_file, align_frame = offset, n_sample = n_sample, offset = offset+50, selection = selection, directory = directory, verbose = True)   
     ## Perturb pdb positions
     perturb_protein_region_sphere(selection=region_selection, r = r, prot = prot, n_sample = n_sample, directory_original = "%s/pdb/WT_offset_%d"%(directory,offset+50), directory_pdb_B = "%s/pdb/offset_%d_perturbed"%(directory,offset+50), directory_new = directory, parallel = True, n_core = n_core) 
     ## Convert PDB to mesh
     convert_pdb_mesh("original", "perturbed", n_sample = n_sample, sm_radius = sm_radius, directory_pdb_A = "%s/pdb/WT_offset_%d"%(directory,offset), directory_pdb_B = "%s/pdb/offset_%d_perturbed"%(directory,offset+50), directory_mesh = "%s/msh_offset_%d/"%(directory,offset), parallel = True, n_core = n_core)
-
 

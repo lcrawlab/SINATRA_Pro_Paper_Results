@@ -3,12 +3,13 @@
 import os
 from traj_reader import *
 from control_simulation import *
-
 import multiprocessing
+from mesh import *
 
 n_core = multiprocessing.cpu_count()
 print("Detected %d cores"%n_core)
 
+n_sample = 100
 prot = "WT"
 protA = "original"
 protB = "perturbed"
