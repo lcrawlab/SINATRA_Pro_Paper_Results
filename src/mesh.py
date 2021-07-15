@@ -9,49 +9,45 @@ from joblib import Parallel, delayed
 class mesh:
     
     def __init__(self):
-        self.vertices = None
-        self.n_vertices = None
-        self.edges = None
-        self.n_edge = None
-        self.faces = None
-        self.n_face = None
+        self.vertices = []
+        """List of coordinates of vertices"""
+        self.n_vertices = 0
+        """Number of vertices"""
+        self.edges = []
+        """List of indices of connected edges"""
+        self.n_edge = 0
+        """Number of edges"""
+        self.faces = []
+        """List of indices of constructed faces"""
+        self.n_face = 0
+        """Number of faces"""
         return
     
-    def normalize(self):
-        rmax = np.amax(np.linalg.norm(self.vertices,axis=1))
-        self.vertices /= rmax
-        return
 
     def calc_radius(self):
+        """Calculate distance of the vertex furthest away from origin """
         return np.amax(np.linalg.norm(self.vertices,axis=1))
     
+    def normalize(self):
+        """Normalize vertices to the unit sphere """
+        rmax = self.calc_radius()
+        self.vertices /= rmax
+        return
+   
     def centering(self):
-        center = np.mean(self.vertices,axis=0)
+        """Center protein to origin by center of geometry"""
+        center = np.mean(self.vertices,axis=0) # center of geometry
         self.vertices = self.vertices - center
         return 
     
-    # read positions of vertices from file
     def import_vertices_from_file(self, filename):
+        """Read positions of vertices from file"""
         self.vertices = np.loadtxt(filename,usecols=(0,1,2))
         self.n_vertices = self.vertices.shape[0]
         return
-    
-    # generate N random vertices on [0,1],[0,1]
-    def generate_random_vertices(self, n_vertices):
-        np.random.seed(0)
-        self.n_vertices = n_vertices
-        vertices = []
-        for i in range(n_vertices):
-            vertice = []
-            for k in range(3):
-                vertice.append(np.random.random())
-            vertices.append(vertice)
-        vertices = np.array(vertices)
-        self.vertices = vertices
-        return
 
-    # calculate distance matrix
     def calc_distance_matrix(self):
+        """Calculate distance matrix"""
         self.n_vertices = self.vertices.shape[0]
         # calculate self distance matrix among vertices
         self.distance_matrix = distance.pdist(self.vertices) 
@@ -68,31 +64,30 @@ class mesh:
         self.pairs = self.pairs[sorted_filter]     
         return
     
-    # output list of edges within distance cutoff from sorted distance matrix  
     def get_edge_list(self, radius):
-        cutoff = np.argmax(self.distance_matrix > radius)
-        return self.pairs[:cutoff], self.distance_matrix[:cutoff]
+        """Output list of edges within distance cutoff from sorted distance matrix"""
+        pair_list = np.argmax(self.distance_matrix > radius)
+        return self.pairs[:pair_list], self.distance_matrix[:pair_list]
     
-    # Neighbor search using Grid search algorithm
     def neighbor_search(self,cutoff=4.0):
-        max_gridsize = 8000
-        passed = False
-        while not passed:
-            try:
-                nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False,max_gridsize=max_gridsize)
-                passed = True
-            except MemoryError:
-                max_gridsize = int(max_gridsize/2)
-            except:
-                raise
-            if passed:
-                break
+        """
+        Neighbor search using Neighbor Grid Search (FastNS) algorithm from MDAnalysis. 
+        
+        It generates a list of indices of pairs of vertices that are within `cutoff` apart, 
+        then save the list as list of edges for the mesh.
+        """
+        nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False)
         result = nsr.self_search()
         self.edges = result.get_pairs()[::2]
         return 
     
-    # convert edge list to face list
     def edge_to_face_list(self):
+        """
+        Convert edge list to face list
+
+        Iterate through list of connected edges to look for any 3 edges that enclose a triangle. 
+        Such enclosed triangles are constructed as faces.
+        """
         self.n_vertices = self.vertices.shape[0]
         self.connections = [set() for i in range(self.n_vertices)]
         for edge in self.edges:
@@ -110,6 +105,7 @@ class mesh:
         return
      
     def read_mesh_file(self,filename='output.mesh'):
+        """Read topology from .msh file"""
         n_line = 0
         i_v = 0
         i_e = 0
@@ -144,6 +140,7 @@ class mesh:
         return 
    
     def write_mesh_file(self,filename='output.mesh'):
+        """Write topology into .msh file"""
         with open(filename,'w') as f:
             f.write('%d %d %d\n'%(self.vertices.shape[0],self.edges.shape[0],self.faces.shape[0]))
             for vertex in self.vertices:
@@ -154,8 +151,8 @@ class mesh:
                 f.write('%d  %d %d %d  \n'%(len(face),face[0],face[1],face[2]))
         return
    
-    # output OFF file for visualization
     def write_off_file(self,filename='output.off'):
+        """Write topology into .off file for visualization"""
         with open(filename,'w') as f:
             f.write('OFF\n')
             f.write('%d %d %d\n'%(self.vertices.shape[0],self.faces.shape[0],self.edges.shape[0]))
@@ -166,14 +163,39 @@ class mesh:
         return
     
     def convert_vertices_to_mesh(self,sm_radius=2.0,msh_file='mesh.msh',rmax=1.0):
+        """
+        Convert set of vertices to a simplicial complex by connecting edges and faces
+        
+        `sm_radius` is the radius cutoff for constructing simplicial complices. 
+        Pairs of vertices closer than `sm_radius` Angstrom apart are connected to form edges. 
+
+        `msh_file` is the filename for output .msh files.
+
+        `rmax` is the radius of the largest mesh used to normalize all meshes to the same unit sphere. 
+        """
+        # position vertices for grid search algorithm
         temp = self.vertices.copy()
         self.vertices -= np.average(self.vertices,axis=0)
-        self.box = np.append(np.amax(np.fabs(self.vertices),axis=0)*2+1.0,[90.0,90.0,90.0])
+        self.box = np.append(np.amax(np.fabs(self.vertices),axis=0)*2+1.0,[90.0,90.0,90.0]) 
         self.vertices += self.box[:3]/2
-        self.neighbor_search(cutoff=sm_radius)
-        self.edge_to_face_list()
-        self.vertices = temp
-        self.vertices /= rmax
-        self.write_mesh_file(filename=msh_file)
+        
+        self.neighbor_search(cutoff=sm_radius) # neighbor grid search to identify vertex pairs within r < cutoff apart
+        self.edge_to_face_list() # generate faces enclosed by any 3 edges
+        self.vertices = temp 
+        self.vertices /= rmax # normalized generated meshes to the specified unit sphere
+        self.write_mesh_file(filename=msh_file) 
         return
-
+    
+    def generate_random_vertices(self, n_vertices):
+        """Generate N random vertices on [0,1],[0,1] for testing purpose"""
+        np.random.seed(0)
+        self.n_vertices = n_vertices
+        vertices = []
+        for i in range(n_vertices):
+            vertice = []
+            for k in range(3):
+                vertice.append(np.random.random())
+            vertices.append(vertice)
+        vertices = np.array(vertices)
+        self.vertices = vertices
+        return

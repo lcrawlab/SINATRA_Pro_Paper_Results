@@ -1,13 +1,14 @@
 #!/bin/python3
 
-from mesh import *
 import os, sys
 import numpy as np
-from scipy.special import logsumexp
-
-# Reconstruction algorithms
 from scipy.stats import rankdata
+from mesh import *
+
 def reconstruct_by_sorted_threshold(meshfile, directions, rates, n_filtration = 25, n_direction_per_cone = 1, ball_radius = 1.0, by_rank = False, verbose = False):
+    """
+    Reconstruction algorithms
+    """
     if verbose:
         sys.stdout.write('Reconstructing for %s ...\r'%meshfile)
         sys.stdout.flush()

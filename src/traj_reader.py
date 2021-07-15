@@ -1,24 +1,28 @@
 #!/bin/python3
 
+import os, sys
+import numpy as np
 import MDAnalysis as mda
 from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 from MDAnalysis.core.groups import AtomGroup
-import numpy as np, os, sys
 from mesh import *
 
-####
-# Convert MD simulation trajectory to aligned protein structures in PDB format
-# 
-# protA = name of protein A
-# protB = name of protein B
-# struct_file = protein structure file e.g. .pdb, .gro, .tpr, .pqr
-# traj_file = MD trajectory file e.g. .xtc, .dcd, .trj
-# n_sample = # of sample structure drawn from trajecotry at even time interval
-# directory = directory to store all the files
-####
 def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_file_B, traj_file_B, align_frame = 0, n_sample = 100, selection = None, directory = None, offset = 0, align_sequence = False, single = False, verbose = False):
+    """
+    Convert MD simulation trajectory to aligned protein structures in PDB format
+     
+    `protA` and `protB` are the name of protein A and B respectively for file naming.
+
+    `struct_file_A` and `struct_file_B` are the the protein structure file (e.g. .pdb, .gro, .tpr, .pqr.) for protein A and B respectively.
+
+    `traj_file_A` and `traj_file_B` are the Molecular Dynamics (MD) simulation trajectory file (e.g. .xtc, .dcd, .trj) for protein A and B respectively.
+
+    `n_sample` is the number of sample structure drawn from trajecotry at even time interval.
     
+    `directory` is the directory of folder to store the output files
+    """
+   
     if directory == None:
         directory = "%s_%s"%(protA,protB)
 
@@ -109,17 +113,6 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
             sys.stdout.write("\n") 
     return
 
-####
-# Convert the aligned protein structures in PDB format (e.g. from "convert_traj_pdb_aligned") to simplicial meshes
-# 
-# protA = name of protein A
-# protB = name of protein B 
-# n_sample = # of sample structure drawn from trajecotry at even time interval
-# radius = cutoff radius for constructing simplicial meshes
-# directory_pdb_A = directory for the input pdb files, default = protA_protB/pdb/protA if not specified
-# directory_pdb_B = directory for the input pdb files, default = protA_protB/pdb/protB if not specified
-# directory_mesh = directory for the input pdb files, default = protA_protB/mesh/ if not specified
-####
 def calc_radius_pdb(selection='protein',directory=None,prot=None,i_sample=None,directory_pdb=None,filename=None):
     if directory != None and prot != None and i_sample != None:
         pdb_file = '%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)
@@ -153,8 +146,20 @@ def convert_pdb_mesh_single(sm_radius, rmax, directory = None, prot = None , i_s
     meshA.convert_vertices_to_mesh(sm_radius=sm_radius,msh_file=msh_file,rmax=rmax)
     return
 
-def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pdb_A = None, directory_pdb_B = None, directory_mesh = None, parallel = False, n_core = -1, verbose = False):
+def convert_pdb_mesh(protA = "protA", protB = "protB", n_sample = 101, sm_radius = 4.0, directory_pdb_A = None, directory_pdb_B = None, directory_mesh = None, parallel = False, n_core = -1, verbose = False):
     
+    """
+    Convert the aligned protein structures in PDB format (e.g. from "convert_traj_pdb_aligned") to simplicial meshes
+    
+    `radius` is the cutoff radius for constructing simplicial meshes.
+    
+    `directory_pdb_A` is the directory for the input pdb files, default = protA_protB/pdb/protA if not specified.
+    
+    `directory_pdb_B` is the directory for the input pdb files, default = protA_protB/pdb/protB if not specified.
+    
+    `directory_mesh` is the directory for the input pdb files, default = protA_protB/mesh/ if not specified.
+    """
+
     if parallel:
         import multiprocessing
         from joblib import Parallel, delayed
