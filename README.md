@@ -1,6 +1,6 @@
 # SINATRA Pro Paper Results
 
-Sub-Image Analysis using Topological Summary Statistics.
+Protein Structure and Conformation Analysis using Topological Summary Statistics.
 
 ## Purpose 
 
