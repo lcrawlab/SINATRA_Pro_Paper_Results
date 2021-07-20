@@ -1,7 +1,7 @@
 #!/bin/python3
 
 import os, sys
-from mesh import *
+from sinatra_pro.mesh import *
 from fast_histogram import histogram1d
 import multiprocessing
 from joblib import Parallel, delayed
@@ -24,9 +24,7 @@ def compute_ec_curve_single(mesh, direction, ball_radius, n_filtration = 25, ec_
 
     If `included_faces` is set to False, it ignore faces from the EC calculations.
     """
-
     eulers = np.zeros(n_filtration,dtype=float)
-    
     vertex_function = np.dot(mesh.vertices,direction) 
     radius = np.linspace(-ball_radius,ball_radius,n_filtration)
    
@@ -34,15 +32,15 @@ def compute_ec_curve_single(mesh, direction, ball_radius, n_filtration = 25, ec_
     V = histogram1d(vertex_function,range=[-ball_radius,ball_radius],bins=(n_filtration-1))
     
     # filtrating edges
-    edge_function = np.amax(vertex_function[mesh.edges],axis=1)
-    E = histogram1d(edge_function,range=[-ball_radius,ball_radius],bins=(n_filtration-1))
-    
-    if include_faces:
+    if len(mesh.edges) > 0:
+        edge_function = np.amax(vertex_function[mesh.edges],axis=1)
+        E = histogram1d(edge_function,range=[-ball_radius,ball_radius],bins=(n_filtration-1))
+    else:
+        E = 0
+
+    if include_faces and len(mesh.faces) > 0:
         # filtrating faces
-        try:
-            face_function = np.amax(vertex_function[mesh.faces],axis=1)
-        except:
-            face_function = [np.amax(vertex_function[face]) for face in mesh.faces]
+        face_function = np.amax(vertex_function[mesh.faces],axis=1)
         F = histogram1d(face_function,range=[-ball_radius,ball_radius],bins=(n_filtration-1))
     else:
         F = 0
@@ -103,9 +101,8 @@ def compute_ec_curve_folder(protA = "protA", protB = "protB", directions = None,
     If `parallel` is set to True, the program runs on multiple cores for EC calculations, 
     then `n_core` will be the number of cores used (the program uses all detected cores if `n_core` is not provided`).
 
-    If `verbose` is set to True, the program prints progress. 
+    If `verbose` is set to True, the program prints progress in command prompt. 
     """
-
 
     if directory_mesh_A == None or directory_mesh_B == None:
         directory = "%s_%s"%(protA,protB)
