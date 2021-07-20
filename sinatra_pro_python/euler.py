@@ -1,7 +1,7 @@
 #!/bin/python3
 
 import os, sys
-from sinatra_pro.mesh import *
+from mesh import *
 from fast_histogram import histogram1d
 import multiprocessing
 from joblib import Parallel, delayed
