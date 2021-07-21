@@ -34,21 +34,21 @@ def logistic_log_likelihood(latent_variables, class_labels):
 def Elliptical_Slice_Sampling(K,y,n_mcmc=100000,burn_in=1000,probit=True,seed=None,verbose=False):
     """
     Elliptical slice sampling algorithm adopted from FastGP::ess from FastGP R package. 
-    The function returns the desired number of mcmc samples. 
+    The function returns the desired number of MCMC samples. 
 
     `K` is the covariance matrix of the Gaussian Process model.
 
-    `y` is the class labels for each data points, 0/1. 
+    `y` is the list of binary class labels for each data points, 0 or 1. 
 
-    `n_mcmc` is the number of desired mcm samples to be returned. 
+    `n_mcmc` is the number of desired mcmc samples to be returned. 
 
-    `burn_in` is the number of burn in steps before mcmc sampling. 
+    `burn_in` is the number of burn in steps before MCMC sampling. 
 
-    If `probit` is set to True, the link function in the model is probit, otherwise the function uses logistic link. 
+    By default, the likelihood function uses probit link. If `probit` is set to False, the function uses logistic link instead.
     
     If `seed` is provided, it will be set as the seed for the random number generator (for testing purpose).
 
-    If `verbose` is set to True, the program prints progress.
+    If `verbose` is set to True, the program prints progress on command prompt.
     """
 
     if verbose:
@@ -89,31 +89,35 @@ def Elliptical_Slice_Sampling(K,y,n_mcmc=100000,burn_in=1000,probit=True,seed=No
         sys.stdout.write('\n')
     return mcmc_samples[burn_in:,:]
 
-def calc_rate(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
+def calc_rate(X,y,bandwidth=0.01,sampling_method='ESS',n_mcmc=100000,burn_in=1000,probit=True,seed=None,prop_var=1,low_rank=False,parallel=False,n_core=-1,verbose=False):
     """
     Calculate RelATive cEntrality (RATE) centrality measures from data.
     
     `X` is the design matrix where columns are observations.
 
-    `y` is the class labels for each data points, 0/1. 
+    `y` is the list of the class labels for each data points, 0 or 1. 
 
     `bandwidth` is the free parameter for the Gaussian kernel. 
 
     `sampling_method` is the sampling method used for sampling parameters, currently only `ESS` (elliptical slice sampling) is available. 
 
-    `n_mcmc` is the number of desired mcm samples to be returned. 
+    `n_mcmc` is the number of desired MCMC samples to be returned. 
 
-    `burn_in` is the number of burn in steps before mcmc sampling. 
+    `burn_in` is the number of burn in steps before MCMC sampling. 
 
-    If `probit` is set to True, the link function in the model is probit, otherwise the function uses logistic link. 
+    By default, the likelihood function uses probit link. If `probit` is set to False, the function uses logistic link instead.
 
     If `seed` is provided, it will be set as the seed for the random number generator (for testing purpose). 
+    
+    'prop_var' is the desired proportion of variance in RATE calculation that the user wants to explain when applying singular value decomposition (SVD) to the design matrix X (this is preset to 1);
+    
+    'low_rank' is a boolean variable detailing if the function will use low rank matrix approximations to compute the RATE values --- note that this highly recommended in the case that the number of covariates (e.g. SNPs, genetic markers) is large; 
 
     If `parallel` is set to True, the program runs on multiple cores for RATE calculations, 
     then `n_core` will be the number of cores used (the program uses all detected cores if `n_core` is not provided).
 
-    If `verbose` is set to True, the program prints progress. 
-    
+    If `verbose` is set to True, the program prints progress on command prompt.
+   
     """
     n = X.shape[0]
     f = np.zeros(n)
@@ -121,6 +125,6 @@ def calc_rate(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn
         sys.stdout.write('Calculating Covariance Matrix...\n')
     Kn = CovarianceMatrix(X.T,bandwidth)
     samples = Elliptical_Slice_Sampling(Kn,y,n_mcmc=n_mcmc,burn_in=burn_in,probit=probit,seed=seed,verbose=verbose)
-    kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,verbose=verbose)
+    kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,prop_var=prop_var,low_rank=low_rank,parallel=parallel,n_core=n_core,verbose=verbose)
     return kld, rates, delta, eff_samp_size
  
