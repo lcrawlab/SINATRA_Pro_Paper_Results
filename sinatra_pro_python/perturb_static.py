@@ -42,7 +42,4 @@ for offset in range(0,50,10):
     convert_traj_pdb_aligned(protA = prot, protB = prot, struct_file_A = struct_file, traj_file_A = traj_file, struct_file_B = struct_file, traj_file_B = traj_file, align_frame = offset, n_sample = n_sample, offset = offset+50, selection = selection, directory = directory)   
     ## Perturb pdb positions
     perturb_protein_region_static(selection=region_selection, dr_vector = dr_vector, prot = prot, n_sample = n_sample, directory_original = "%s/pdb/WT_offset_%d"%(directory,offset+50), directory_pdb_B = "%s/pdb/offset_%d_perturbed"%(directory,offset+50), directory_new = directory, parallel = True, n_core = n_core) 
-    ## Convert PDB to mesh
-    convert_pdb_mesh("original", "perturbed", n_sample = n_sample, sm_radius=sm_radius, directory_pdb_A = "%s/pdb/WT_offset_%d"%(directory,offset), directory_pdb_B = "%s/pdb/offset_%d_perturbed"%(directory,offset+50), directory_mesh = "%s/msh_offset_%d/"%(directory,offset), parallel = True, n_core = n_core)
-
 

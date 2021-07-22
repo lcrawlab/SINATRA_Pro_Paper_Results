@@ -1,6 +1,7 @@
 #!/bin/python3
 
 import argparse, os
+
 from directions import *
 from traj_reader import *
 from euler import *
@@ -45,11 +46,12 @@ parser.add_argument('-bw','--bandwidth', type=float, help='bandwidth for ellipti
 parser.add_argument('-sm','--sampling_method', type=str, help='sampling method, default: ESS', default='ESS')
 parser.add_argument('-nm','--n_mcmc', type=int, help='number of sample from ESS', default=100000)
 parser.add_argument('-ll' ,'--logistic_likelihood', help='use logistic likelihood instead of probit likelihood', dest='probit', action='store_false')
+parser.add_argument('-lr' ,'--low_rank', help='use low rank matrix approximations to compute the RATE values', dest='low_rank', action='store_true')
 
 parser.add_argument('-v' ,'--verbose', help='verbose', dest='verbose', action='store_true')
 parser.add_argument('-no','--name_offset', help='name folder with offset', dest='single', action='store_false')
 
-parser.set_defaults(from_pdb=False,hemisphere=False,probit=True,parallel=False,verbose=False,single=True)
+parser.set_defaults(from_pdb=False,hemisphere=False,probit=True,low_rank=False,parallel=False,verbose=False,single=True)
 args = parser.parse_args()
 
 from_pdb = args.from_pdb # if True, start from PDB files
@@ -91,7 +93,7 @@ bandwidth = args.bandwidth
 sampling_method = args.sampling_method
 n_mcmc = args.n_mcmc
 probit = args.probit
-
+low_rank = args.low_rank
 single = args.single
 verbose = args.verbose
 
@@ -165,11 +167,12 @@ np.savetxt('%s/%s_%s_label_all.txt'%(directory,protA,protB),y)
 kld, rates, delta, eff_samp_size = calc_rate(X,y,
         bandwidth=bandwidth,
         n_mcmc=n_mcmc,
+        low_rank=low_rank,
         parallel=parallel,
         n_core=n_core,
         verbose=verbose)
 
-np.savetxt("%s/rates_%s_%s_%s_%.1f_%d_%d_%.2f_%d.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),rates)
+np.savetxt("%s/rate_atom_%s_%s_%s_%.1f_%d_%d_%.2f_%d.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),rates)
 
 ## reconstruct the RATE values onto the protein structures for visualization
 ## reconstruct probabilities are stored in "Temperature factor" column in the pdb format
@@ -184,14 +187,14 @@ vert_prob = reconstruct_on_multiple_mesh(protA,protB,directions,
         directory_mesh="%s/msh/%s_%.1f"%(directory,protA,sm_radius),
         verbose=verbose)
 
-np.savetxt("%s/vert_prob_DECT_%s_%s_%.1f_%d_%d_%.2f_%d.txt"%(directory,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),vert_prob)
+np.savetxt("%s/rate_atom_%s_%s_%s_%.1f_%d_%d_%.2f_%d.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),vert_prob)
 
 write_vert_prob_on_pdb(vert_prob,
         protA=protA,
         protB=protB,
         selection=selection, 
         pdb_in_file=reference_pdb_file, 
-        pdb_out_file="%s/vert_prob_DECT_%s_%s_%.1f_%d_%d_%.2f_%d_all.pdb"%(directory,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration))
+        pdb_out_file="%s/rate_atom_%s_%s_%s_%.1f_%d_%d_%.2f_%d_all.pdb"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration))
 
 print("SINATRA Pro calculation completed.")
 
