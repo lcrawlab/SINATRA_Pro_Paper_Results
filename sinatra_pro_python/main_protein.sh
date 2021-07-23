@@ -18,6 +18,5 @@ python3 main_protein.py --protA WT --protB R164S \
                 --ec_type "DECT" \
                 --n_filtration 120 \
                 --n_mcmc 100000 \
-                --low_rank \
                 --parallel --n_core 16 --verbose
 done
