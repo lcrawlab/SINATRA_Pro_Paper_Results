@@ -46,7 +46,7 @@ def compute_ec_curve_single(mesh, direction, ball_radius, n_filtration = 25, ec_
         F = 0
     
     eulers[1:] = V - E + F
-
+    
     if ec_type == "ECT":
         eulers = np.cumsum(eulers)
         return eulers
@@ -142,6 +142,7 @@ def compute_ec_curve_folder(protA = "protA", protB = "protB", directions = None,
                     if verbose:
                         sys.stdout.write('Calculating EC for %s %s...\r'%(prot,filename))
                         sys.stdout.flush()
+                    print(filename)
                     meshProtein = mesh()
                     meshProtein.read_mesh_file(filename=directory_mesh + '/' + filename)
                     if parallel:

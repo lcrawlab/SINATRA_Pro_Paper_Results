@@ -233,6 +233,5 @@ def convert_pdb_mesh(protA = "protA", protB = "protB", n_sample = 101, sm_radius
                     convert_pdb_mesh_single(sm_radius=sm_radius,rmax=rmax,directory_pdb=directory_pdb,filename=filename,directory_mesh=directory_mesh_prot,prot=prot,selection='protein',verbose=verbose)
     if verbose:
         sys.stdout.write('\n')
-
     return
 
