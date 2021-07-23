@@ -142,7 +142,6 @@ def compute_ec_curve_folder(protA = "protA", protB = "protB", directions = None,
                     if verbose:
                         sys.stdout.write('Calculating EC for %s %s...\r'%(prot,filename))
                         sys.stdout.flush()
-                    print(filename)
                     meshProtein = mesh()
                     meshProtein.read_mesh_file(filename=directory_mesh + '/' + filename)
                     if parallel:
