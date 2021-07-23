@@ -6,10 +6,10 @@ python3 main_protein.py --protA WT --protB R164S \
                 --directory "WT_R164S_65_213_6.0" \
                 --n_sample 100 \
                 --offset ${offset} \
-                --struct_file_A "data/wt.gro" \
-                --traj_file_A "data/wt.xtc" \
-                --struct_file_B "data/r164s.gro" \
-                --traj_file_B "data/r164s.xtc" \
+                --struct_file_A "data/WT.gro" \
+                --traj_file_A "data/WT.xtc" \
+                --struct_file_B "data/R164S.gro" \
+                --traj_file_B "data/R164S.xtc" \
                 --selection "protein and resid 65:213" \
                 --radius 6.0 \
                 --n_cone 20 \
