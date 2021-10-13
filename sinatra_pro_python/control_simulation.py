@@ -18,7 +18,7 @@ def calc_radius_write_pdb_perturb_static(directory_original, prot, selection, di
         if u_new.atoms[i].ix in region:
             u_new.atoms[i].position += dr_vector
     u_new.atoms.write('%s/%s_frame%d.pdb'%(directory_pdb_B,prot,i_sample))
-    r2 = np.amax(np.linalg.norm(u.atoms.positions,axis=1))
+    r2 = np.amax(np.linalg.norm(u_new.atoms.positions,axis=1))
     return [r1,r2]
 
 def perturb_protein_region_static(selection='resid 163:178', dr_vector = [0.5,0.5,0.5], prot = "WT", n_sample = 101, directory_original = 'WT_R164S/pdb/WT/', directory_new = "simulation", directory_pdb_B = None, parallel = False, n_core = -1):   
@@ -63,7 +63,7 @@ def calc_radius_write_pdb_perturb_sphere(directory_original, prot, selection, di
             u_new.atoms[i].position += v[k]
             k += 1
     u_new.atoms.write('%s/%s_frame%d.pdb'%(directory_pdb_B,prot,i_sample))
-    r2 = np.amax(np.linalg.norm(u.atoms.positions,axis=1))
+    r2 = np.amax(np.linalg.norm(u_new.atoms.positions,axis=1))
     return [r1,r2]
 
 def perturb_protein_region_sphere(selection='resid 163:178', r = 1.0, prot = "WT", n_sample = 101, directory_original = 'WT_R164S/pdb/WT/', directory_new = "simulation", directory_pdb_B = None, parallel = False, n_core = -1):    
