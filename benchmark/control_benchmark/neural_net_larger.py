@@ -9,30 +9,31 @@ import numpy as np
 
 #tf.compat.v1.disable_eager_execution()
 
-directories_perturb = [
-                       'simulation_perturb_omega_loop_vector_0.5_0.5_0.5',
-                       'simulation_perturb_omega_loop_vector_1.0_1.0_1.0',
-                       'simulation_perturb_omega_loop_vector_2.0_2.0_2.0',
-                       'simulation_perturb_omega_loop_sphere_0.5',
-                       'simulation_perturb_omega_loop_sphere_1.0',
-                       'simulation_perturb_omega_loop_sphere_2.0',
-                      ]
+directory_original = '../../sinatra_pro/WT_R164S_65_213/'
 
-filenames = [
-             'perturb_0.5_vector',
-             'perturb_1.0_vector',
-             'perturb_2.0_vector',
-             'perturb_0.5_sphere',
-             'perturb_1.0_sphere',
-             'perturb_2.0_sphere',
-            ]
+directory = '../../sinatra_pro/'
+
+directories_perturb = ['simulation_perturb_omega_loop_sphere_0.5_0.0_offset/',
+                       'simulation_perturb_omega_loop_sphere_1.0_0.0_offset/',
+                       'simulation_perturb_omega_loop_sphere_2.0_0.0_offset/',
+                       'simulation_perturb_omega_loop_vector_0.0_0.5_0.5_0.5_offset/',
+                       'simulation_perturb_omega_loop_vector_0.0_1.0_1.0_1.0_offset/',
+                       'simulation_perturb_omega_loop_vector_0.0_2.0_2.0_2.0_offset/']
+                        
+
+filenames = ['perturb_0.5_0.0_sphere_offset',
+             'perturb_1.0_0.0_sphere_offset',
+             'perturb_2.0_0.0_sphere_offset',
+             'perturb_0.0_0.5_vector_offset',
+             'perturb_0.0_1.0_vector_offset',
+             'perturb_0.0_2.0_vector_offset']
 
 for directory_perturb, filename in zip(directories_perturb,filenames):
 
     for offset in range(0,50,10):
  
-        directory_A = directory_perturb + 'pdb/WT_offset_%d/'%offset
-        directory_B = directory_perturb + 'pdb/offset_%d_perturbed/'%(offset+50)
+        directory_A = directory + directory_perturb + 'pdb/WT_offset_%d/'%offset
+        directory_B = directory + directory_perturb + 'pdb/offset_%d_perturbed/'%(offset+50)
 
         x = []
         y = []
@@ -59,11 +60,13 @@ for directory_perturb, filename in zip(directories_perturb,filenames):
             [
              keras.Input(shape=dim),
              layers.BatchNormalization(),
-             layers.Dense(2048, activation="relu"),
+             layers.Dense(2048, activation="relu", kernel_regularizer=keras.regularizers.l2()),
              layers.BatchNormalization(),
-             layers.Dense(512, activation="relu"),
+             layers.Dense(2048, activation="relu", kernel_regularizer=keras.regularizers.l2()),
              layers.BatchNormalization(),
-             layers.Dense(128, activation="relu"),
+             layers.Dense(512, activation="relu", kernel_regularizer=keras.regularizers.l2()),
+             layers.BatchNormalization(),
+             layers.Dense(128, activation="relu", kernel_regularizer=keras.regularizers.l2()),
              layers.BatchNormalization(),
              layers.Dense(1, name = "last_block"),
              layers.Dense(1, activation="sigmoid", use_bias=False)
@@ -88,4 +91,4 @@ for directory_perturb, filename in zip(directories_perturb,filenames):
             gradient = gradient.numpy()
             min_val, max_val = np.amin(gradient), np.amax(gradient)
             saliency_map = (gradient - min_val) / (max_val - min_val + k.epsilon())
-            np.savetxt('saliency_map_%s_offset_%d.txt'%(filename,offset),saliency_map)
+            np.savetxt('larger_reg_L2/saliency_map_%s_offset_%d.txt'%(filename,offset),saliency_map)

@@ -3,6 +3,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.keras import backend as k
 import MDAnalysis as mda
 import numpy as np
 
@@ -77,8 +78,6 @@ for directory_perturb, filename in zip(directories_perturb,filenames):
         model.fit(x,y,
                   batch_size = 50,
                   epochs = 400)
-
-        from tensorflow.keras import backend as k
 
         with tf.GradientTape() as tape:
             x = tf.convert_to_tensor(x)
