@@ -8,5 +8,5 @@ The purpose of this repo is to provide the exact scripts/code used to produce to
 
 ## Relevant Citations
 
-Wai Shing Tang*, Gabriel Monteiro da Silva*, Henry Kirveslahti, Erin Skeens, Bibo Feng, Timothy Sudijono, Kevin K. Yang, Sayan Mukherjee, Brenda Rubenstein, and Lorin Crawford. Topological data analytic approach for discovering biophysical signatures in protein dynamics. _bioRxiv_.
+Wai Shing Tang*, Gabriel Monteiro da Silva*, Henry Kirveslahti, Erin Skeens, Bibo Feng, Timothy Sudijono, Kevin K. Yang, Sayan Mukherjee, Brenda Rubenstein, and Lorin Crawford. Topological data analytic approach for discovering biophysical signatures in protein dynamics. _PLOS Computational Biology_. **18**(5): e1010045.
 
